@@ -7,9 +7,11 @@ Created on Tue Mar 10 01:19:30 2020
 objective : working version v1.0 ready on 21/04/2020
 >> DONE
 
-currrent editing version : v1.0.2
+currrent editing version : v1.1.2
+last add : automatic download
 
 """
+import requests
 
 import pandas as pd
 from pandas.core.common import flatten
@@ -25,9 +27,8 @@ from tkinter import ttk, Canvas, colorchooser, tix
 
 import pygame
 
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk #, ImageGrab
 
-# from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 import operator, os, threading, subprocess
@@ -47,8 +48,9 @@ from learning import learn_model, build_match_features, build_database, build_al
 #--------------------------------PROGRAMME------------------------------------#
 
 pygame.mixer.init()
-    
+
 #fonctions générales
+
 def mouseclick():
     pygame.mixer.Channel(2).play(pygame.mixer.Sound("Sounds/mouseclick.wav"))
 
@@ -188,7 +190,7 @@ def analysefoot():
     #Fichiers CSV données nécessaires 
     chpnts = ['E0','E1','F1','F2','SP1', 'SP2','D1','D2','I1','I2','N1','P1','SC0','SC1', 'T1','B1','ARG','BRA','SWZ','MEX','IRL'] #Liste des championnats dont on veut récupérer les données
     Div1 = ['E0','B1','SP1','D1','N1','I1','P1','F1','T1','SC0']
-    Div2 = ['E1','SP2','D2','F2','SC1']    
+    Div2 = ['E1','SP2','D2','F2','SC1','I2']    
     dict_df = {}                #initialisation du dictionnaire dataframe (panda)
     Teams = {}                  #initialisation du dictionnaire contenant tous les clubs
     color_chp = {}              #initialisation du dico pour l'attribution des couleurs selon le championnat
@@ -639,7 +641,7 @@ def analysefoot():
             img = plt.imread("Images/Backgrounds/ShotsRatioBG.png")
             x = 1183
             y = 467
-            plt.figure(figsize=(8, 8))
+            plt.figure(figsize=(12, 12))
             fig, ax = plt.subplots()
             ax.imshow(img)
             plt.scatter(*zip(*LonTarget), c = '#99CC00')
@@ -650,8 +652,9 @@ def analysefoot():
             plt.ylim(bottom=y)
             plt.axis('off')
             plt.title(f'Ratio de tirs cadrés de {t}')
+            
             ratiosavepath = f"{savepath}/ratio{t}.png"
-            plt.savefig(ratiosavepath, transparent=True, dpi = 120)
+            plt.savefig(ratiosavepath, transparent=True, dpi = 128)
             plt.close()
             LtoRemove.append(ratiosavepath)
             
@@ -672,16 +675,18 @@ def analysefoot():
         #-------------Affichage des résultats------------#
 
         
-        # Mpourcentage = [TeamWins, TeamLosses, TeamDraws]
-        # labels = 'Victoires', 'Défaites', 'Matchs Nuls'
-        # colors = ['#00FFFF','#0000FF', '#3366FF']
-        # explode = (0.15, 0, 0)
-        # plt.pie(Mpourcentage, explode=explode, colors=colors, autopct='%1.1f%%', shadow=True, startangle=165)
-        # plt.title("Statistiques de " + t)
-        # plt.legend(labels, title="Résultats", loc="center right", bbox_to_anchor = (1.5, 0.5))
-        # plotsavepath = f"{savepath}/stats{t}.png"
-        # plt.savefig(plotsavepath)
-        # plt.close()
+        Mpourcentage = [TeamWins, TeamLosses, TeamDraws]
+        labels = 'Victoires', 'Défaites', 'Matchs Nuls'
+        colors = ['#00FFFF','#0000FF', '#3366FF']
+        explode = (0.15, 0, 0)
+        plt.pie(Mpourcentage, explode=explode, colors=colors, autopct='%1.1f%%', shadow=True, startangle=165)
+        plt.title("Statistiques de " + t)
+        plt.legend(labels, title="Résultats", loc="center right", bbox_to_anchor = (1.15, 0.4))
+        plotsavepath = f"{savepath}/plot{t}.png"
+        plt.savefig(plotsavepath)
+        # plt.show()
+        plt.close()
+        LtoRemove.append(plotsavepath)
         
         fig, ax = plt.subplots(figsize=(22, ((nbMatchs+4)/3))) # set size frame
         ax.xaxis.set_visible(False)
@@ -712,7 +717,6 @@ def analysefoot():
         plt.savefig(clstsavepath, transparent=True)
         plt.close()
         LtoRemove.append(clstsavepath)
-
 
         #REPORTLAB
         doctitle = ("Statistiques de " +t)
@@ -795,45 +799,52 @@ def analysefoot():
             text = "Le bilan est excellent. Félicitations."
         ptext = (f'<font size="12">{text}</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
-        Story.append(Spacer(1, 48))        
+        Story.append(Spacer(1, 30))        
         ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(PageBreak())
         
-        Story.append(Spacer(1, 24))
+        Story.append(Spacer(1, 10))
         ptext = f'<font size="16">Matchs joués par {t}</font>'
         story_style = styles["Justify"]
         story_style.alignment = 1
         Story.append(Paragraph(ptext, story_style))
+        Story.append(Spacer(1, 6))
         im = ImReport(matchssavepath, 9*inch ,6*inch)
         Story.append(im)
-        Story.append(Spacer(1, 24))        
+        # Story.append(Spacer(1, 6))
+        # im = ImReport(plotsavepath,2.75*inch ,2.75*inch)
+        # Story.append(im)
+        
+        Story.append(Spacer(1, 10))        
         ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(PageBreak())
 
-        Story.append(Spacer(1, 24))
+        Story.append(Spacer(1, 78))
         ptext = f'<font size="14">Classement de {t} en {Ligue}</font>'
         story_style = styles["Justify"]
         story_style.alignment = 1
         Story.append(Paragraph(ptext, story_style))
         im = ImReport(clstsavepath, 9*inch ,6*inch)
         Story.append(im)
-        if Ligue != 'Brasileirão' and Ligue != 'SuperLiga Argentina' and Ligue != 'Liga Mexico' and Ligue != 'Super League (Suisse)' and Ligue != 'Airtricity League (Irlande)':
-            Story.append(Spacer(1, 24))
-            ptext = f'<font size="14">Ratios de tirs cadrés de {t}</font>'
-            story_style = styles["Justify"]
-            story_style.alignment = 1
-            Story.append(Paragraph(ptext, story_style))
-            im = ImReport(ratiosavepath, 9*inch ,6*inch)
-            Story.append(im)
-
-        Story.append(Spacer(1, 24))        
+        Story.append(Spacer(1, 10))        
         ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
+        Story.append(PageBreak())
+        
+        if Ligue != 'Brasileirão' and Ligue != 'SuperLiga Argentina' and Ligue != 'Liga Mexico' and Ligue != 'Super League (Suisse)' and Ligue != 'Airtricity League (Irlande)':
+            Story.append(Spacer(1, 24))
+            im = ImReport(ratiosavepath, 9*inch ,6*inch)
+            Story.append(im)
+
+            Story.append(Spacer(1, 2))        
+            ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
+                Base de données provenant de : https://www.football-data.co.uk/</font>')
+            Story.append(Paragraph(ptext, styles["Normal"]))
 
         
         doc.build(Story)
@@ -1334,7 +1345,7 @@ def analysefoot():
         
         fenetre3.mainloop()
 
-    #-------------------------PRONOSTIQUES----------------------------#
+    #-------------------------PRONOSTICS----------------------------#
     
     # def dataprono():
     
@@ -1385,7 +1396,7 @@ def analysefoot():
             tCompair = process.extractOne(Team2,TeamsName)[0]
             tituT2 =(dfPlayers[np.logical_and(dfPlayers['club']== tCompair, (np.logical_and(dfPlayers['team_position'] != 'SUB', dfPlayers['team_position'] != 'RES')))][['club','short_name', 'team_position', 'team_jersey_number']])
         
-            titre = ("Pronostique de : " + Team1 + " vs " + Team2)
+            titre = ("Pronostic de : " + Team1 + " vs " + Team2)
             fenetre4 = Toplevel(fenetre)
             fenetre4.title(titre)
             fenetre4.iconphoto(False, PhotoImage(file='Images/icones/icone.png'))
@@ -1918,7 +1929,7 @@ def analysefoot():
             MsgBoxHelp2 = messagebox.askokcancel('Aide Stats&Co',"Dans 'Stats & Co', tu as accès aux statistiques des équipes.\n\nIl te suffir de chosir un CHAMPIONNAT pour avoir accès à son CLASSEMENT. Sélectionne un CLUB pour afficher sa COMPOSITION classique, ou simplement voir ses STATS.")
             if MsgBoxHelp2 == True:
                 mouseclick()
-                MsgBoxHelp3 = messagebox.askokcancel('Aide Pronostiques',"Dans 'Pronostiques', tu peux sélectionner une équipe\net regarder nos conseils pour tes prochains PARIS (€) !")
+                MsgBoxHelp3 = messagebox.askokcancel('Aide Pronostics',"Dans 'Pronostics', tu peux sélectionner une équipe\net regarder nos conseils pour tes prochains PARIS (€) !")
                 if MsgBoxHelp3 == True :
                     mouseclick()
                     MsgBoxHelp4 = messagebox.askokcancel('Aide Simulation', "Dans 'Simulation Championnat', tu peux simuler une saison entière d'un championnat en définissant tes propres paramètres de simulation !\n\nNB : Le poids du rang provient du classement réel actuel, le poids du niveau provient des notes des joueurs dans FIFA 20.\nSi les 2 paramètres sont à 0 le championnat est nul.")
@@ -1928,7 +1939,7 @@ def analysefoot():
                         
     def ExitApplication():      #fonction permettant la fermeture de l'application avec confirmation de l'utilisateur. Le choix de redémarrer la musique du menu au début est volontaire.
         notif()
-        MsgBox = messagebox.askquestion ('Exit Application',"Etes-vous sûr de vouloir quitter l'application ?", icon = 'warning', default = 'no')
+        MsgBox = messagebox.askquestion ('Exit Application',"Etes-vous sûr de vouloir quitter l'application ?", icon = 'warning', default = 'no', parent = fenetre)
         
         if MsgBox == 'yes':
             pygame.mixer.stop()
@@ -1964,7 +1975,7 @@ def analysefoot():
         BReset = Button(ROOTparam, text = "Reset", command = Reset, width = 30)
         BReset.place(x = 140, y = 160)
         
-        blearning = Button(ROOTparam, text = "Deep Learning", command = learning, width = 30)
+        blearning = Button(ROOTparam, text = "Datas & Deep Learning", command = learning, width = 30)
         blearning.place(x = 140, y = 190)
         
         bcredits = Button(ROOTparam, text = "Crédits", command = creditsm, width = 30)
@@ -1997,7 +2008,7 @@ def analysefoot():
             sub.config(bg='white')
 
         bal5 = tix.Balloon(ROOTparam,initwait=1000, bg = 'white')
-        bal5.bind_widget(blearning, balloonmsg="Permet de modifier le modèle des pronostiques.\nAttention, cette action irréversible.")
+        bal5.bind_widget(blearning, balloonmsg="Permet de modifier les fichiers.\nAttention, les actions sont irréversibles.")
         for sub in bal5.subwidgets_all():
             sub.config(bg='white')
             
@@ -2036,7 +2047,7 @@ def analysefoot():
                 colorbg = colorbg.upper()
                 dfConfig.loc[dfConfig["users"]== profil, "default_bg"] = colorbg
                 dfConfig.to_csv("config.csv", index=False)
-                msg = messagebox.showinfo('Redémarrage',"Changement de couleur sauvegardé. L'application va redémarrer  pour que ce dernier soit effectif.")
+                msg = messagebox.showinfo('Redémarrage',"Changement de couleur sauvegardé. L'application va redémarrer  pour que ce dernier soit effectif.", parent = ROOTlook)
                 fenetre.destroy()
                 for r in LtoRemove:
                     os.remove(r)
@@ -2199,22 +2210,16 @@ def analysefoot():
     def learning():
         mouseclick2()
         global ROOTlearning
-        def LiguePronoUpdate():
-            Uligue = cligue.get()
-            if Uligue == 'Ligue 1':
-                #procédure erase ligue 1
-                notif()
-            elif Uligue == 'Ligue 2':
-                #procédure
-                notif()
-            #...
+        DicoLigues = {'Premier League' : 'E0', 'League Championship': 'E1', 'Scottish Premier League' :'SC0', 'Scottish First Division':'SC1', 'Ligue 1' :'F1', 'Ligue 2':'F2', 'Bundesliga 1':'D1', 'Bundesliga 2 ':'D2', 'Liga BBVA' :'SP1', 'Liga Adelante' : 'SP2', 'Serie A' :'I1', 'Serie B' : 'I2', 'Eredivisie' : 'N1', 'Liga Sagres' : 'P1', 'Jupiler League' :'B1', 'Süper Lig' : 'T1'}
+        Divs = list(DicoLigues.keys())
+        Ligues = DicoLigues.values()
         
         def updatemodel():
             mouseclick2()
+            msg = messagebox.showinfo("En étude...","Cette option est en cours d'implémentation. Revenez bientôt pour l'utiliser.", parent = ROOTlearning)
             # msg = messagebox.askokcancel("ATTENTION","Cette action peut durer plusieurs plusieurs minutes et est irréversible", default = 'cancel',parent = ROOTlearning)
-            # if msg == True:
-            #     mouseclick()
-            #     LiguePronoUpdate()
+            if msg == 'ok':
+                mouseclick2()
             #     ROOTlearning.destroy()
             
         def updateall():
@@ -2225,20 +2230,49 @@ def analysefoot():
                 build_all_database(Div1, 4, .95)
                 learn_model('all')
 
+        def DataUpdate():
+            for l in Ligues :
+                req = requests.get(f'http://www.football-data.co.uk/mmz4281/1920/{l}.csv')
+                url_content = req.content
+                csv_file = open(f'Data/AllLeagues/{l}2020.csv', 'wb')
+                
+                csv_file.write(url_content)
+                csv_file.close()
+            msg = messagebox.showinfo("Redémarrage",f"Les ligues ont bien étés mises à jour. L'application va redémarrer.", parent = ROOTlearning)
+            mouseclick2()
+            fenetre.destroy()
+            for r in LtoRemove:
+                os.remove(r)
+            Launch()       
+        
+        def LeagueUpdate():
+            k = cligue.get()
+            v = DicoLigues[k]
+            req = requests.get(f'http://www.football-data.co.uk/mmz4281/1920/{v}.csv')
+            url_content = req.content
+            csv_file = open(f'Data/{v}2020.csv', 'wb')
             
+            csv_file.write(url_content)
+            csv_file.close()            
+            msg = messagebox.showinfo("Redémarrage",f"La ligue {k} a bien été mise à jour. L'application va redémarrer.", parent = ROOTlearning)
+            mouseclick2()
+            fenetre.destroy()
+            for r in LtoRemove:
+                os.remove(r)
+            Launch()       
             
         ROOTlearning = Toplevel(fenetre)
-        ROOTlearning.title("Deep Learning")
+        ROOTlearning.title("Datas")
         ROOTlearning.iconphoto(False, PhotoImage(file='Images/icones/param.png'))
         ROOTlearning.geometry("800x550")
         bgROOT = Label(ROOTlearning, image = learningBG)
         bgROOT.place(x = 0, y = 0, relwidth=1, relheight=1)
         ROOTlearning.resizable(0, 0)
         
-        lscript = Label(ROOTlearning, bg = '#2B618F', fg = 'white', text = "Bienvenue dans le coeur du Programme !\nC'est ici que vous choisissez sur quel modèle reposent les pronostiques\nAttention, tous les championnats ne sont pas éligibles.")
+        lscript = Label(ROOTlearning, bg = '#2B618F', fg = 'white', text = "Bienvenue dans le coeur du Programme !\nC'est ici que vous choisissez sur quel modèle reposent les pronostics.\nVous pouvez également mettre à jour vos fichiers (requiert internet)\nAttention, tous les championnats ne sont pas éligibles.")
         lscript.place(x =200, y = 50)
 
-        cligue = ttk.Combobox(ROOTlearning, values = LiguesProno, state= "readonly", width = 60)
+        cligue = ttk.Combobox(ROOTlearning, values = Divs, state= "readonly", width = 60)
         cligue.current(0)
         cligue.place(x=200, y=100)
         
@@ -2247,6 +2281,12 @@ def analysefoot():
 
         bupdateall = Button(ROOTlearning, text = "Update All Models", command = updateall, width = 53)
         bupdateall.place(x =200, y = 180)
+        
+        bdata = Button(ROOTlearning,  text = "Update Selected League Data", command = LeagueUpdate, width = 53)
+        bdata.place(x =200, y = 350)
+
+        bdataall = Button(ROOTlearning, text = "Update All Data files", command = DataUpdate, width = 53)
+        bdataall.place(x =200, y = 380)
 
         Bquit = Button(ROOTlearning, text = "Retour", bg = "#E81123", fg = "white", activebackground = "darkred", activeforeground = "white" ,command = lambda:[ROOTlearning.destroy(), mouseclick2()])
         Bquit.place(x = 0, y = 524)
@@ -2735,9 +2775,9 @@ def analysefoot():
     b81.bind("<Enter>", mouseoverb81)
     b81.bind("<Leave>", mouseoverb81)
     
-    #---------Pronostiques---------#
+    #---------Pronostics---------#
 
-    l03 = Label (fenetre, text = "Pronostiques", fg = "black", width = 30, height = 2, relief = GROOVE)
+    l03 = Label (fenetre, text = "Pronostics", fg = "black", width = 30, height = 2, relief = GROOVE)
     l03.place(x = 332, y = 10)
 
     lpt1 = Label(fenetre, text = "Sélection Equipe 1", bg = macouleur,fg = "white", width = 30)
@@ -2754,7 +2794,7 @@ def analysefoot():
     cpt2.current(1)
     cpt2.place(x = 332, y = 130)
     
-    bprono = Button(fenetre, text = 'Lancer Pronostique', command = pronoGUI ,bg = macouleur, fg = "white", width = 29, height = 3,activebackground = "grey", activeforeground = "snow", state = NORMAL)
+    bprono = Button(fenetre, text = 'Lancer Pronostic', command = pronoGUI ,bg = macouleur, fg = "white", width = 29, height = 3,activebackground = "grey", activeforeground = "snow", state = NORMAL)
     bprono.place(x = 332, y = 220)
     if bprono['state'] == NORMAL:
         bprono.bind('<Enter>', mouseoverbprono)
