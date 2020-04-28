@@ -133,7 +133,7 @@ def Launch():
     root = Tk()
     launcherBG = PhotoImage(file = r"Images/Backgrounds/launcher.png")    
     root.geometry("600x400+600+300")
-    root.title('Football Datas')
+    root.title('Football Data')
     root.iconphoto(False, PhotoImage(file='Images/icones/icone.png'))
     root.resizable(0,0)
     bgROOT = Label(root, image = launcherBG)
@@ -800,7 +800,7 @@ def analysefoot():
         ptext = (f'<font size="12">{text}</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(Spacer(1, 30))        
-        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
+        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATA<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(PageBreak())
@@ -818,7 +818,7 @@ def analysefoot():
         # Story.append(im)
         
         Story.append(Spacer(1, 10))        
-        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
+        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATA<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(PageBreak())
@@ -831,7 +831,7 @@ def analysefoot():
         im = ImReport(clstsavepath, 9*inch ,6*inch)
         Story.append(im)
         Story.append(Spacer(1, 10))        
-        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
+        ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATA<br/>\
             Base de données provenant de : https://www.football-data.co.uk/</font>')
         Story.append(Paragraph(ptext, styles["Normal"]))
         Story.append(PageBreak())
@@ -842,7 +842,7 @@ def analysefoot():
             Story.append(im)
 
             Story.append(Spacer(1, 2))        
-            ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATAS<br/>\
+            ptext = ('<font size="10">Données extraites grâce à FOOTBALL DATA<br/>\
                 Base de données provenant de : https://www.football-data.co.uk/</font>')
             Story.append(Paragraph(ptext, styles["Normal"]))
 
@@ -1975,7 +1975,7 @@ def analysefoot():
         BReset = Button(ROOTparam, text = "Reset", command = Reset, width = 30)
         BReset.place(x = 140, y = 160)
         
-        blearning = Button(ROOTparam, text = "Datas & Deep Learning", command = learning, width = 30)
+        blearning = Button(ROOTparam, text = "Data & Deep Learning", command = learning, width = 30)
         blearning.place(x = 140, y = 190)
         
         bcredits = Button(ROOTparam, text = "Crédits", command = creditsm, width = 30)
@@ -2262,7 +2262,7 @@ def analysefoot():
             Launch()       
             
         ROOTlearning = Toplevel(fenetre)
-        ROOTlearning.title("Datas")
+        ROOTlearning.title("Data")
         ROOTlearning.iconphoto(False, PhotoImage(file='Images/icones/param.png'))
         ROOTlearning.geometry("800x550")
         bgROOT = Label(ROOTlearning, image = learningBG)
